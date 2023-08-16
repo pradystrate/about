@@ -1,0 +1,150 @@
+let planets = [];
+let sun;
+let draggedPlanet = null;
+let lastClickTime = 0;  // to keep track of the last time the canvas was clicked
+let supernovaStartTime = -1;  // when the supernova effect started
+
+function setup() {
+  createCanvas(700, 700);
+  sun = new Sun(width/2, height/2, 50);
+  for(let i = 0; i < 5; i++) {
+        let attempts = 0;
+    let maxAttempts = 100; // To avoid infinite loop
+    
+    let newPlanet;
+    do {
+      let distance = random(70, 250);
+      let diameter = random(15, 30);
+      newPlanet = new Planet(sun.x, sun.y, distance, diameter);
+      attempts++;
+    } while (isColliding(newPlanet) && attempts < maxAttempts);
+    
+    if (attempts < maxAttempts) {
+      planets.push(newPlanet);
+    }
+  }
+}
+function draw() {
+  background(0);
+
+  // Supernova effect
+  if (supernovaStartTime > 0) {
+    let elapsed = millis() - supernovaStartTime;
+
+    if (elapsed < 3000) {
+      let intensity = map(elapsed, 0, 3000, 0, 255);
+      background(intensity);
+      translate(random(-4, 4), random(-4, 4));  // Shaking effect
+    } else {
+      planets = [];  // Clearing planets
+      sun = null;  // Clearing sun
+      background(255);
+      return;  // Exit the draw function
+    }
+  }
+
+  if (sun) sun.show();
+
+  for (let planet of planets) {
+    planet.orbit();
+    planet.drag();
+    planet.show();
+  }
+}
+
+  function Sun(x, y, r) {
+    this.x = x;
+    this.y = y;
+    this.r = r;
+  
+    this.show = function() {
+      fill(255, 204, 0);
+      ellipse(this.x, this.y, this.r*2);
+    }
+  }
+function isColliding(newPlanet) {
+  // Check against the sun
+  if (dist(newPlanet.x, newPlanet.y, sun.x, sun.y) <= newPlanet.r + sun.r) {
+    return true;
+  }
+
+  // Check against other planets
+  for (let planet of planets) {
+    if (dist(newPlanet.x, newPlanet.y, planet.x, planet.y) <= newPlanet.r + planet.r) {
+      return true;
+    }
+  }
+  return false;
+}
+function Planet(sunX, sunY, distance, r) {
+    this.angle = random(TWO_PI);
+    this.distance = distance;
+    this.r = r;
+    this.orbitSpeed = (250 - this.distance) / 5000;  // Inverse relationship with distance    
+    this.dragging = false;
+    this.originalX = this.x;
+    this.originalY = this.y;
+    this.drag = function() {
+    if (this.dragging) {
+        // Update the planet's position based on mouse position
+        this.x = mouseX;
+        this.y = mouseY;
+        // Recalculate distance and angle relative to the sun
+        this.distance = dist(this.x, this.y, sun.x, sun.y);
+        this.angle = atan2(this.y - sun.y, this.x - sun.x);
+    }
+}
+  
+    this.orbit = function() {
+      if (!this.dragging) {
+        this.angle += this.orbitSpeed;
+      }
+      this.x = sunX + this.distance * cos(this.angle);
+      this.y = sunY + this.distance * sin(this.angle);
+    }
+  
+    this.show = function() {
+     fill(220);
+      ellipse(this.x, this.y, this.r*2);
+    }
+  
+    this.clicked = function(mx, my) {
+      let d = dist(mx, my, this.x, this.y);
+      return d < this.r;
+    }
+  }
+  function mousePressed() {
+    for(let planet of planets) {
+      if (planet.clicked(mouseX, mouseY)) {
+        draggedPlanet = planet;
+        draggedPlanet.dragging = true;
+        break;
+      }
+    }
+  }
+  
+function mouseReleased() {
+  if (draggedPlanet) {
+    if (isColliding(draggedPlanet)) {
+      // Snap the planet back to its original position
+      draggedPlanet.x = draggedPlanet.originalX;
+      draggedPlanet.y = draggedPlanet.originalY;
+    }
+    draggedPlanet.dragging = false;
+    draggedPlanet = null;
+  }
+}
+
+function mouseClicked() {
+  let d = dist(mouseX, mouseY, sun.x, sun.y);
+  
+  if (d < sun.r && millis() - lastClickTime < 500) {  // Double-clicked the sun
+    supernova();
+  }
+  
+  lastClickTime = millis();
+}
+
+function supernova() {
+  supernovaStartTime = millis();
+}

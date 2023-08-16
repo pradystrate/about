@@ -1,0 +1,42 @@
+.wtaf{
+    position: absolute;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; 
+    align-items: center;
+    text-align: center;
+    z-index: -10;
+    margin-left:60px;
+}
+.wtaftop{
+    position: absolute;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr; 
+    align-items: center;
+    text-align: center;
+    z-index: +10;
+    margin-left:60px;
+}
+.heading1{  
+    font-size: 5vw;
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+    color: #FF0000;
+    text-shadow: 0px 5px 20px #000000;
+}
+.heading2{  
+    font-size: 5vw;
+    font-family: 'Cinzel', serif;
+    text-align: center;
+    color: #FF0000;
+
+}
+.background {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background-image: url(https://c4.wallpaperflare.com/wallpaper/626/913/146/cyberpunk-skyscraper-upside-down-animated-movies-wallpaper-preview.jpg);
+    background-size: cover;
+    background-position: center;
+    filter: blur(10px);
+    z-index: -20;
+}
